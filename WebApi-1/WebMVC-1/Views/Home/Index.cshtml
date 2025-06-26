@@ -1,0 +1,168 @@
+﻿@* @model OrderDTO
+
+<form asp-action="Create" method="post">
+    <input asp-for="OrderNo"/>
+    <input asp-for="CustomerName"/>
+    <input asp-for="DateTime"/>
+    <table>
+        <thead>
+            <tr>
+                <th>Item</th>
+                <th>Qunty</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody id="itemTable">
+            @for(int i = 0; i < Model.ItemDTO.Count; i++)
+            {
+                <tr>
+                    <td><input asp-for="ItemDTO[@i].Item" /></td>
+                    <td><input asp-for="ItemDTO[@i].Quantity"/></td>
+                    <td><button type="button" onclick="removeRow(this)">Remove</button></td>
+                </tr>
+            }
+        </tbody>
+    </table>
+    <button type="button" onclick="addItem()">Add Item</button>
+    <button type="submit">Save</button>
+</form>
+@section Scripts{
+    <script>
+        function addItem() {
+            const table = document.getElementById("itemTable");
+            const index = table.rows.length;
+
+            const row = table.insertRow();
+            row.innerHTML=`
+                 <td><input name="ItemDTO[${index}].Item" class="form-control"/></td>
+                 <td><input name="ItemDTO[${index}].Quantity" class="form-control"/></td>
+                     <td><button type="button" class="btn btn-danger" onclick="removeRow(this)">Remove</button></td>
+                       `}
+
+        function removeRow(button) {
+            const row = button.closest("tr");
+            row.remove();
+            renumberInputs();
+        }
+        function renumberInputs() {
+            const rows = document.querySelectorAll("#itemTable tr");
+            rows.forEach((row, i) => {
+                const itemInput = row.querySelector("input[name*='Item']");
+                const qtyInput = row.querySelector("input[name*='Quantity']");
+
+                if (itemInput) itemInput.name = `ItemDTO[${i}].Item`;
+                if (qtyInput) qtyInput.name = `ItemDTO[${i}].Quantity`;
+            });
+        }
+        
+    </script>
+    } *@
+
+@model OrderDTO
+
+<form asp-action="Create" method="post" style="width: 800px; margin: 0 auto; font-family: Arial;">
+
+    <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+        <div>
+            <label>Order No:</label>
+            <input asp-for="OrderNo" style="width: 150px;" />
+        </div>
+        <div>
+            <input placeholder="Order No" style="width: 150px;" />
+            <button type="button" style="padding: 4px 12px;">Find</button>
+        </div>
+    </div>
+
+    <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+        <div>
+            <label>Date:</label>
+            <input asp-for="DateTime" type="date" style="width: 150px;" />
+        </div>
+    </div>
+
+    <div style="margin-bottom: 20px;">
+        <label>Customer Name:</label>
+        <input asp-for="CustomerName" style="width: 100%;" />
+    </div>
+
+    <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+        <label>Item:</label>
+        <input id="itemName" style="width: 200px;" />
+        <label>Quantity:</label>
+        <input id="itemQty" type="number" style="width: 80px;" />
+        <button type="button" onclick="addItem()" style="padding: 2px 10px;">ADD</button>
+    </div>
+
+    <table border="1" cellpadding="5" cellspacing="0" width="100%" id="itemsTable">
+        <thead style="background: #eee;">
+            <tr>
+                <th>SL</th>
+                <th>Item</th>
+                <th>Qty</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            @for (int i = 0; i < Model.ItemDTO.Count; i++)
+            {
+                <tr>
+                    <td>@(i + 1)</td>
+                    <td>
+                        <input asp-for="Items[@i].Item" readonly />
+                    </td>
+                    <td>
+                        <input asp-for="Items[@i].Quantity" readonly />
+                    </td>
+                    <td>
+                        <button type="button" onclick="removeRow(this)">Remove</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <div style="text-align: right; margin-top: 10px;">
+        <strong>Total Qty :</strong> <span id="totalQty">0</span>
+    </div>
+
+    <div style="margin-top: 20px; text-align: center;">
+        <button type="submit" style="padding: 6px 20px;">Save</button>
+        <button type="button" style="padding: 6px 20px;">Update</button>
+        <button type="button" style="padding: 6px 20px;">Delete</button>
+    </div>
+
+</form>
+
+@section Scripts {
+    <script>
+        function addItem() {
+            const itemName = document.getElementById('itemName').value;
+            const itemQty = document.getElementById('itemQty').value;
+            if (!itemName || !itemQty) return;
+
+            const table = document.getElementById('itemsTable').getElementsByTagName('tbody')[0];
+            const rowCount = table.rows.length;
+            const row = table.insertRow();
+
+            row.innerHTML = `
+                        <td>${rowCount + 1}</td>
+                                <td><input name="ItemDTO[${rowCount}].Item" value="${itemName}" readonly /></td>
+                                <td><input name="ItemDTO[${rowCount}].Quantity" value="${itemQty}" readonly /></td>
+                        <td><button type="button" onclick="removeRow(this)">Remove</button></td>
+                    `;
+
+            updateTotalQty();
+        }
+        function removeRow(btn) {
+            const row = btn.closest('tr');
+            row.remove();
+            updateTotalQty();
+        }
+        function updateTotalQty() {
+            const qtyInputs = document.querySelectorAll('#itemsTable tbody input[name$=".Quantity"]');
+            let total = 0;
+            qtyInputs.forEach(input => total += parseInt(input.value));
+            document.getElementById('totalQty').innerText = total;
+        }
+    </script>
+}
